@@ -1,0 +1,60 @@
+version: '3.8'
+
+volumes:
+  datafiles:
+
+
+services:
+  mysql:
+    image: mysql:8.0.0
+    container_name: mysql8
+    environment:
+      - MYSQL_ROOT_PASSWORD=Davies999
+      - MYSQL_TCP_PORT=3306
+    volumes:
+      - datafiles:/var/lib/mysql
+    networks:
+      - services
+    restart: always
+
+  website:
+    container_name: osTicket
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - CONTAINER_NAME=osTicket
+
+      - CRON_PERIOD=10
+
+      - MYSQL_DBHOST=mysql
+      - MYSQL_DBPORT=3306
+      - MYSQL_DBUSER=root
+      - MYSQL_DBPASS=Davies999
+      - MYSQL_DBNAME=osTicket
+
+      - SMTP_HOST=localhost
+      - SMTP_PORT=25
+      - SMTP_FROM=osticket@example.com
+      - SMTP_TLS=0
+      - SMTP_USER=osticket@example.com
+      - SMTP_PASS=password
+
+      - INSTALL_SECRET=somerandomlargecharacterstring
+      - INSTALL_EMAIL=osticket@example.com
+      - INSTALL_NAME=OSTicket Helpdesk
+
+      - ADMIN_FIRSTNAME=Admin
+      - ADMIN_LASTNAME=User
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_USER=ostadmin
+      - ADMIN_PASS=Password123
+    networks:
+      - proxy
+      - services
+    restart: always
+    ports:
+      - 8080:80
+      - 8083:443
+    depends_on:
+      - mysql
